@@ -181,7 +181,7 @@
                     const amortizacao = financiamento / parcelas;
                     let saldoDevedor = financiamento, totalJuros = 0, totalPago = 0;
 
-                    let tabela = this.gerarResumo(financiamento, taxa, taxaAtualizacao, totalJuros, totalPago, 'SAC');
+                    let tabela = '';
                     tabela += `<table class="sac">
                 <tr>
                     <th>Parcela</th>
@@ -214,32 +214,19 @@
                     }
 
                     tabela += `</table>`;
-
-                    // Define os dados da simulação
-                    const simulacao = {
-                        metodo: 'SAC',
-                        financiamento,
-                        parcelas,
-                        taxa,
-                        atualizar,
-                        taxaAtualizacao
-                    };
-
-                    this.adicionarAba(tabela, 'SAC', simulacao);
+                    const resumo = this.gerarResumo(financiamento, taxa, taxaAtualizacao, totalJuros, totalPago, 'SAC');
+                    this.adicionarAba(resumo + tabela, 'SAC', { financiamento, parcelas, taxa, atualizar, taxaAtualizacao });
                 }
+
 
                 calcularPRICE() {
                     const [financiamento, parcelas, taxa, atualizar, taxaAtualizacao] = this.obterDados();
                     const taxaMensal = taxa / 12 / 100;
 
-                    // Fórmula para calcular o valor da parcela fixa
                     const valorParcelaFixa = financiamento * taxaMensal / (1 - Math.pow(1 + taxaMensal, -parcelas));
+                    let saldoDevedor = financiamento, totalJuros = 0, totalPago = 0;
 
-                    let saldoDevedor = financiamento;
-                    let totalJuros = 0;
-                    let totalPago = 0;
-
-                    let tabela = this.gerarResumo(financiamento, taxa, taxaAtualizacao, totalJuros, totalPago, 'PRICE');
+                    let tabela = '';
                     tabela += `<table class="price">
                 <tr>
                     <th>Parcela</th>
@@ -252,23 +239,15 @@
                 </tr>`;
 
                     for (let i = 1; i <= parcelas; i++) {
-                        // Atualiza o saldo devedor a cada 12 meses, se necessário
                         if (atualizar && i % 12 === 1 && i !== 1) saldoDevedor *= (1 + taxaAtualizacao / 100);
 
-                        // Calcula os juros para a parcela atual
                         const juros = saldoDevedor * taxaMensal;
-
-                        // Calcula a amortização (parte do valor da parcela que reduz o saldo devedor)
                         const amortizacao = valorParcelaFixa - juros;
 
-                        // Atualiza o saldo devedor
                         saldoDevedor -= amortizacao;
-
-                        // Atualiza os totais acumulados
                         totalJuros += juros;
                         totalPago += valorParcelaFixa;
 
-                        // Adiciona os valores à tabela
                         tabela += `<tr>
                     <td>${i}</td>
                     <td>${this.formatarMoeda(saldoDevedor > 0 ? saldoDevedor : 0)}</td>
@@ -281,30 +260,22 @@
                     }
 
                     tabela += `</table>`;
-
-                    // Define os dados da simulação
-                    const simulacao = {
-                        metodo: 'PRICE',
-                        financiamento,
-                        parcelas,
-                        taxa,
-                        atualizar,
-                        taxaAtualizacao
-                    };
-
-                    this.adicionarAba(tabela, 'PRICE', simulacao);
+                    const resumo = this.gerarResumo(financiamento, taxa, taxaAtualizacao, totalJuros, totalPago, 'PRICE');
+                    this.adicionarAba(resumo + tabela, 'PRICE', { financiamento, parcelas, taxa, atualizar, taxaAtualizacao });
                 }
+
 
 
 
                 gerarResumo(financiamento, taxa, taxaAtualizacao, totalJuros, totalPago, metodo) {
                     return `<h3>Resumo da Simulação (${metodo})</h3>
-                            <p>Valor do Empréstimo: ${this.formatarMoeda(financiamento)}</p>
-                            <p>Taxa de Juros Anual: ${taxa}%</p>
-                            <p>Taxa de Atualização Anual: ${taxaAtualizacao || 'N/A'}%</p>
-                            <p>Total Pago em Juros: ${this.formatarMoeda(totalJuros)}</p>
-                            <p>Total Pago: ${this.formatarMoeda(totalPago)}</p>`;
+            <p>Valor do Empréstimo: ${this.formatarMoeda(financiamento)}</p>
+            <p>Taxa de Juros Anual: ${taxa}%</p>
+            <p>Taxa de Atualização Anual: ${taxaAtualizacao || 'N/A'}%</p>
+            <p>Total Pago em Juros: ${this.formatarMoeda(totalJuros)}</p>
+            <p>Total Pago: ${this.formatarMoeda(totalPago)}</p>`;
                 }
+
                 adicionarAba(tabela, metodo, simulacao) {
                     if (!simulacao) {
                         console.error("Simulação não definida!");
@@ -428,6 +399,10 @@
 
             window.simulador = new Simulador();
         });
+
+    
+
+       
     </script>
 </body>
 
